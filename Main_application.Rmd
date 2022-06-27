@@ -1,0 +1,60 @@
+---
+title: "Smilator_omics"
+author: "Anastasia&Nasimeh"
+date: "6/27/2022"
+output: html_document
+---
+# Simulator code for data generation process of omics data. 
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(GEOquery) #bioconductor
+```
+
+
+```{r, message=FALSE, cache=FALSE, echo=FALSE,warning=FALSE}
+GEO_real_world_data <- "GSE145714" # ID for real world data 
+gset <- getGEO(GEO_real_world_data, GSEMatrix =TRUE, getGPL=FALSE, destdir="example_dataset/")
+gset <- gset$GSE145714_series_matrix.txt.gz
+
+clinical_data <- pData(gset) # clinico-pathological description
+clinical_data <- clinical_data[,c(2,41:44)]
+colnames(clinical_data)[c(2:5)] <- c("hiv_status", "gender", "tb_status", "timepoint")
+clinical_data <- clinical_data[order(clinical_data$tb_status),]
+beta_matrix <- exprs(gset)
+rm(gset)
+
+calculate_means(beta_matrix)
+```
+
+```{r pressure, echo=FALSE}
+#default parameters for the simulator
+num_samples <- 500
+healthy_proportion <- 0.5
+num_mutated_CpGs <- 200
+delta_beta <- 0.3
+
+```
+
+```{r pressure, echo=FALSE}
+# Function for calculating the mean of CpGs across all samples.
+calculate_means <- function (beta_values_matrix) {
+means <- as.data.frame(matrixStats::rowMeans2(beta_values_matrix))
+names(means) <- "Mean"
+return(means)
+}
+```
+
+```{r pressure, echo=FALSE}
+# Function for calculating the standard deviation of CpGs across all samples.
+calculate_SD <- function (beta_values_matrix) {
+SD <- as.data.frame(matrixStats::rowSds(beta_values_matrix))
+names(SD) <- "SD"
+return(SD)
+}
+```
